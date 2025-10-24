@@ -18,19 +18,19 @@ if not api_key:
     st.sidebar.warning("Please enter your API key to start using the assistant.")
     st.stop()
 
-# --- LinkedIn Button ---
-st.sidebar.markdown("---")
-st.sidebar.markdown("👤 **Connect with me on LinkedIn**")
 
-linkedin_url = "www.linkedin.com/in/ganesh-kumar-e1609" 
+st.sidebar.markdown("---")
 st.sidebar.markdown(
-    f"""<a href="{linkedin_url}" target="_blank">
-        <button style='padding:10px 20px;border:none;border-radius:8px;background:#0A66C2;color:white;font-weight:bold;cursor:pointer;'>
+    """
+    <a href="https://www.linkedin.com/in/ganesh-kumar-e1609" target="_blank">
+        <button style="width:100%;padding:0.5rem 1rem;background-color:#0A66C2;color:white;border:none;border-radius:5px;cursor:pointer;">
             🔗 Visit My LinkedIn
         </button>
-    </a>""",
+    </a>
+    """,
     unsafe_allow_html=True
 )
+
 
 
 # --- Model Setup ---
@@ -222,4 +222,5 @@ elif st.session_state.stage == "qa":
             response = policy_qa(q)
             st.success(response)
             st.radio(ltext["feedback"], ["👍", "👎"])
+
 
