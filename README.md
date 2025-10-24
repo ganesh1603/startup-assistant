@@ -23,11 +23,11 @@ This is an interactive chatbot designed to assist Tamil Nadu entrepreneurs in tu
 
 ```
 📁 tn-startup-assistant/
-├── app.py                      # Main Streamlit app
-├── requirements.txt           # Python dependencies
+├── app.py                      
+├── requirements.txt          
 ├── .streamlit/
-│   └── secrets.toml           # API keys and Supabase credentials (not pushed to GitHub)
-├── Tamil_Nadu_Startup_Policy.pdf # Policy doc used for RAG
+│   └── secrets.toml           
+├── Tamil_Nadu_Startup_Policy.pdf =
 └── README.md
 ```
 
@@ -35,10 +35,9 @@ This is an interactive chatbot designed to assist Tamil Nadu entrepreneurs in tu
 
 ## Notes
 
-* Do **not** upload your `.streamlit/secrets.toml` file to public repositories.
 * This project uses [Supabase](https://supabase.io) for session data logging.
 * Refer to official sources like [MCA](https://www.mca.gov.in/) or [StartupTN](https://startuptn.in/) for up-to-date registration procedures and document lists.
-* For deployment to Streamlit Community Cloud, ensure your repo is private if using `.streamlit/secrets.toml`.
+
 
 ---
 
