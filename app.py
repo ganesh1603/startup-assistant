@@ -101,4 +101,124 @@ T = {
         "deadlines": "📅 Active Grant Deadlines in Tamil Nadu",
         "feedback": "📝 Was this answer helpful?",
         "saved": "📦 Your session was saved successfully.",
-        "ask_q": "💬 Ask any question about Tamil Nad_
+        "ask_q": "💬 Ask any question about Tamil Nadu startup policy, registration, or benefits"
+    },
+    "தமிழ்": {
+        "welcome": "வணக்கம்! உங்கள் யோசனையை தமிழ்நாட்டில் பதிவு செய்யப்பட்ட ஸ்டார்ட்அப்பாக மாற்றுவோம்.",
+        "idea_q": "1️⃣ உங்கள் ஸ்டார்ட்அப் யோசனை என்ன? (1–2 வரிகளில்)",
+        "founder_q": "2️⃣ எத்தனை நிறுவியர்கள் உள்ளனர்?",
+        "funding_q": "3️⃣ முதலீட்டைத் தேடுகிறீர்களா?",
+        "yes": "ஆம்", "no": "இல்லை",
+        "continue": "கொள்கை கேள்விகளுக்கு தொடருங்கள்",
+        "upload_prompt": "📎 உங்கள் ஐடியா டெக் அல்லது பிச்சை PDF வடிவில் பதிவேற்றவும்:",
+        "processing_file": "பதிவேற்றிய கோப்பை பகுப்பாய்வு செய்கிறோம்...",
+        "summary_title": "📝 பதிவேற்றிய டெக்கின் சுருக்கம்",
+        "score_title": "🚦 ஸ்டார்ட்அப் தயார் மதிப்பெண்",
+        "scheme_match": "🏷️ உங்களுக்கு பொருந்தும் ஸ்டார்ட்அப் திட்டங்கள்",
+        "incubator_match": "🏢 உங்கள் மாவட்டத்திற்கு அருகிலுள்ள இன்கியூபேட்டர்கள்",
+        "deadlines": "📅 தமிழ்நாட்டில் இயங்கும் நிதி வாய்ப்புகள்",
+        "feedback": "📝 இந்த பதில் பயனுள்ளதா?",
+        "saved": "📦 உங்கள் அமர்வு வெற்றிகரமாக சேமிக்கப்பட்டது.",
+        "ask_q": "💬 தமிழ்நாடு ஸ்டார்ட்அப் கொள்கை, பதிவு அல்லது நன்மைகள் பற்றி கேளுங்கள்"
+    }
+}
+ltext = T[st.session_state.language]
+
+# --- LLM Helpers ---
+def summarize_pdf(text): return run_model(f"Summarize startup pitch: {text[:8000]}")
+def readiness_score(text): return run_model(f"Score 0–100 and explain: {text[:8000]}")
+def match_schemes(text): return run_model(f"Suggest 3 Tamil Nadu startup schemes: {text[:5000]}")
+def find_incubators(district): return run_model(f"Incubators in or near {district}")
+def grant_deadlines(): return run_model("List startup grant deadlines in Tamil Nadu with links")
+def policy_qa(question):
+    context = st.session_state.policy_text[:16000] if st.session_state.policy_text else ""
+    return run_model(f"Use the Tamil Nadu Startup Policy below to answer:\n\n{context}\n\nQ: {question}\nA:")
+
+# --- UI Flow ---
+st.title("🧠 Tamil Nadu Startup Assistant")
+
+if st.session_state.stage == "start":
+    st.session_state.stage = "ask_idea"
+    st.success(ltext["welcome"])
+
+if st.session_state.stage == "ask_idea":
+    idea = st.text_input(ltext["idea_q"])
+    if idea:
+        st.session_state.answers["idea"] = idea
+        st.session_state.stage = "ask_founders"
+        st.rerun()
+
+elif st.session_state.stage == "ask_founders":
+    founders = st.text_input(ltext["founder_q"])
+    if founders.isdigit():
+        st.session_state.answers["founder_count"] = int(founders)
+        st.session_state.stage = "ask_funding"
+        st.rerun()
+
+elif st.session_state.stage == "ask_funding":
+    funding = st.radio(ltext["funding_q"], [ltext["yes"], ltext["no"]])
+    st.session_state.answers["funding_needed"] = funding == ltext["yes"]
+    st.session_state.stage = "ask_location"
+    st.rerun()
+
+elif st.session_state.stage == "ask_location":
+    district = st.text_input("📍 Your District")
+    if district:
+        st.session_state.answers["district"] = district
+        st.session_state.stage = "upload_pdf"
+        st.rerun()
+
+elif st.session_state.stage == "upload_pdf":
+    st.markdown(f"### {ltext['upload_prompt']}")
+    uploaded = st.file_uploader("Upload PDF", type="pdf")
+    user_text = st.session_state.answers["idea"]
+    if uploaded:
+        reader = PdfReader(uploaded)
+        file_text = "\n".join([p.extract_text() for p in reader.pages if p.extract_text()])
+        user_text += "\n" + file_text
+        st.session_state.answers["full_text"] = user_text
+        with st.spinner(ltext['processing_file']):
+            ans = st.session_state.answers
+            ans["summary"] = summarize_pdf(user_text)
+            ans["score"] = readiness_score(user_text)
+            ans["schemes"] = match_schemes(user_text)
+            ans["incubators"] = find_incubators(ans["district"])
+            ans["deadlines"] = grant_deadlines()
+        st.session_state.stage = "results"
+        st.rerun()
+
+elif st.session_state.stage == "results":
+    ans = st.session_state.answers
+    st.subheader(ltext["summary_title"]); st.write(ans["summary"])
+    st.subheader(ltext["score_title"]); st.success(ans["score"])
+    st.subheader(ltext["scheme_match"]); st.info(ans["schemes"])
+    st.subheader(ltext["incubator_match"]); st.info(ans["incubators"])
+    st.subheader(ltext["deadlines"]); st.warning(ans["deadlines"])
+
+    # --- Log Session ---
+    log_session({
+        "session_id": st.session_state.session_id,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "language": st.session_state.language,
+        "idea": ans["idea"],
+        "founder_count": ans["founder_count"],
+        "funding_needed": str(ans["funding_needed"]),
+        "district": ans["district"],
+        "score": ans["score"],
+        "company_type": "Auto",
+        "schemes": ans["schemes"],
+        "incubators": ans["incubators"],
+        "pdf_uploaded": 1
+    })
+    st.success(ltext["saved"])
+    st.session_state.stage = "qa"
+    st.button(ltext["continue"], on_click=lambda: st.rerun())
+
+elif st.session_state.stage == "qa":
+    st.markdown(f"### {ltext['ask_q']}")
+    q = st.text_input("Q:")
+    if q:
+        with st.spinner("Thinking..."):
+            response = policy_qa(q)
+            st.success(response)
+            st.radio(ltext["feedback"], ["👍", "👎"])
