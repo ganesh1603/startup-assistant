@@ -18,11 +18,20 @@ if not api_key:
     st.sidebar.warning("Please enter your API key to start using the assistant.")
     st.stop()
 
-# Add LinkedIn button
+# --- LinkedIn Button ---
 st.sidebar.markdown("---")
-st.sidebar.markdown("👤 [Connect with me on LinkedIn](www.linkedin.com/in/ganesh-kumar-e1609)")
-if st.sidebar.button("🔗 Visit My LinkedIn"):
-    st.markdown('<meta http-equiv="refresh" content="0; url=www.linkedin.com/in/ganesh-kumar-e1609" />', unsafe_allow_html=True)
+st.sidebar.markdown("👤 **Connect with me on LinkedIn**")
+
+linkedin_url = "www.linkedin.com/in/ganesh-kumar-e1609" 
+st.sidebar.markdown(
+    f"""<a href="{linkedin_url}" target="_blank">
+        <button style='padding:10px 20px;border:none;border-radius:8px;background:#0A66C2;color:white;font-weight:bold;cursor:pointer;'>
+            🔗 Visit My LinkedIn
+        </button>
+    </a>""",
+    unsafe_allow_html=True
+)
+
 
 # --- Model Setup ---
 if api_provider == "Gemini (Google)":
@@ -213,3 +222,4 @@ elif st.session_state.stage == "qa":
             response = policy_qa(q)
             st.success(response)
             st.radio(ltext["feedback"], ["👍", "👎"])
+
